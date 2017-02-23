@@ -1,0 +1,122 @@
+<html>
+<head>
+	<title>Minesweeper</title>
+	<style>
+		body {background-color: #607d8b;}
+	</style>
+</head>
+<body>
+	<div id=controls>
+		<label>Rows:<input type=text name="rows" id="input-rows" value="8"  /></label>
+		<label>Columns<input type=text name="cols" id="input-cols" value="8"  /></label>
+		<label>Bombs<input type=text name="bombs" id="input-bombs" value="4"  /></label>
+		<input type=button value="Generate/Reset" onclick="createGame()">
+	</div>
+	<div id=ui></div>
+	<script>
+		// yes high level design (top-bottom)
+		var currentGame = null;
+		function byId(id) {
+			return document.getElementById(id);
+		}
+		function createGame() {
+			var rows = byId('input-rows').value,
+				cols = byId('input-cols').value,
+				bombs = byId('input-bombs').value;
+
+			//try {
+				currentGame = new Minesweeper(byId('ui'), rows, cols, bombs);
+			//} catch(e) {
+			//	alert('Game cretion faild, reason:'+e.message); //??				
+			//}
+		}
+	</script>
+
+
+	<script>
+	// cuz tomer likes this, or until we move to seperate file.
+	var Minesweeper = (function(w, d) {	
+		var FIELDS = {
+			EMPTY: ' ',
+			BOMB: '@', // replace with nice unicode bomb
+			NUMB: '9' // why not
+		};
+		var MAX_ROWS = 64;
+		var MAX_COLS = 64;
+		function Minesweeper(ui, rows, cols, bombs) {
+			if (!(ui instanceof HTMLElement)) {
+				throw new Exception('View is missing');
+			}
+
+			// here check some calculation of bombs number to rows*cols ratio is 
+			// rows*cols > bombs-1
+			// ...
+
+			
+			this.bombs = parseInt(bombs,10);
+			this.rows = parseInt(rows,10) > MAX_ROWS ? MAX_ROWS : parseInt(rows,10);
+			this.cols = parseInt(cols,10) > MAX_COLS ? MAX_COLS : parseInt(cols,10);
+			this.board = []; // flat array! COLS*y+x
+			this.bombsMap = [];
+
+			this.initializeBoard(); // put bombs, spaces, numbers
+			this.createBoard(); // create html elemnts
+			this.attachEvents(); // attach events
+			this.renderBoard(); // insert the html into dom
+		}
+		
+		// :'(
+		Minesweeper.prototype.initializeBoard = function () {
+			// made the board empty
+			var n = this.rows * this.cols;
+			while (n--) {
+				this.board.push(FIELDS.EMPTY);
+			}
+
+			// randomize the x,y position and put a bomb
+			var b = this.bombs, x=0, y=0, bPos=0;
+			while(b) {
+				x=getRandomInt(0,this.cols); y=getRandomInt(0,this.rows);
+				bPos = flatPos(x,y, this.cols);
+				if (this.board[bPos] === FIELDS.EMPTY) {
+					this.board[bPos] = FIELDS.BOMB;
+					bombsMap.push({x:x,y:y});
+					b--;
+				}
+			}
+
+			console.log(this.board);
+			// go over the board and add numbers around the bombs
+			for(var i=0,n=this.bombsMap.length;i<n;i++) {
+				/* 
+				So I need to think about it, will continue later
+				how to make the algorithms with while and not explicit if's
+				(0,0) - bomb center position. hmm.
+				(this.bombsMap[i].x, this.bombsMap[i].y)
+
+				(-1,-1)(0,-1)(1, -1)
+				(-1, 0)(0, 0)(0, 1)
+				(-1, 1)(0, 1)(1, 1)
+				*/
+			}
+
+		};
+		Minesweeper.prototype.createBoard = function () {};
+		Minesweeper.prototype.attachEvents = function () {};
+		Minesweeper.prototype.renderBoard = function () {};
+
+		function flatPos(x,y, cols) {
+			return cols*y + x; // thumb_up!
+		}
+
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+		function getRandomInt(min, max) {
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return Math.floor(Math.random() * (max - min)) + min;
+		}
+		return Minesweeper;
+	})(window, document);
+	</script>
+</body>
+</html>
